@@ -255,7 +255,7 @@ public class IntegrityHistory {
 			Run<?, ?> tempBuild = result.getRun();
 			String tempBuildLink = tempBuild.getUrl();
 			String tempActionUrl = IntegrityTestResultAction.ACTION_URL;
-			this.url = Jenkins.get().getRootUrl() + tempBuildLink + tempActionUrl + result.getUrl();
+			this.url = Jenkins.get().getServletContext().getContextPath() + "/" + tempBuildLink + tempActionUrl;
 		}
 
 		@Override

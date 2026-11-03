@@ -79,6 +79,11 @@
 		<artifactId>workflow-durable-task-step</artifactId>
 		<scope>test</scope>
 	</dependency>
+	<dependency>
+		<groupId>org.jenkins-ci.plugins</groupId>
+		<artifactId>cloudbees-folder</artifactId>
+		<scope>test</scope>
+	</dependency>
   </dependencies>
 
   <!-- Override default Jenkins-CI repositories, since we currently don't want to release the plugin there yet -->

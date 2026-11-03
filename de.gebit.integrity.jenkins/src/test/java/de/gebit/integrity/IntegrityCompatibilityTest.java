@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -18,6 +19,11 @@ import hudson.model.Result;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import jenkins.model.JenkinsLocationConfiguration;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -40,6 +46,11 @@ class IntegrityCompatibilityTest {
 
     private FreeStyleProject project(JenkinsRule j, String contents, boolean failOnErrors) throws IOException {
         FreeStyleProject project = j.createFreeStyleProject();
+        configureProject(project, contents, failOnErrors);
+        return project;
+    }
+
+    private void configureProject(FreeStyleProject project, String contents, boolean failOnErrors) {
         project.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
@@ -49,7 +60,34 @@ class IntegrityCompatibilityTest {
             }
         });
         project.getPublishersList().add(new IntegrityTestResultRecorder("integrity.xml", false, failOnErrors));
-        return project;
+    }
+
+    @Test
+    void trendMapLinksToEachBuildsIntegrityReport(JenkinsRule j) throws Exception {
+        Folder folder = j.createProject(Folder.class, "outer");
+        Folder nested = folder.createProject(Folder.class, "inner");
+        FreeStyleProject project = nested.createProject(FreeStyleProject.class, "project");
+        configureProject(project, report(3, 1, 2, 0), false);
+        FreeStyleBuild first = j.assertBuildStatus(Result.UNSTABLE, project.scheduleBuild2(0));
+        FreeStyleBuild second = j.assertBuildStatus(Result.UNSTABLE, project.scheduleBuild2(0));
+        JenkinsLocationConfiguration.get().setUrl(null);
+        Set<String> expected = Set.of(
+                j.getURL().getPath() + first.getUrl() + IntegrityTestResultAction.ACTION_URL,
+                j.getURL().getPath() + second.getUrl() + IntegrityTestResultAction.ACTION_URL);
+
+        try (JenkinsRule.WebClient client = j.createWebClient()) {
+            Page map = client.getPage(j.getURL() + project.getUrl() + "integrity/trend/countGraph/map");
+            Matcher matcher = Pattern.compile("href=\"([^\"]+)\"").matcher(map.getWebResponse().getContentAsString());
+            Set<String> actual = new HashSet<>();
+            while (matcher.find()) {
+                actual.add(matcher.group(1));
+            }
+            assertEquals(expected, actual);
+            for (FreeStyleBuild build : new FreeStyleBuild[] { first, second }) {
+                HtmlPage reportPage = client.getPage(build, IntegrityTestResultAction.ACTION_URL + "/");
+                assertTrue(reportPage.asNormalizedText().contains("Compatibility"));
+            }
+        }
     }
 
     @Test
