@@ -106,12 +106,11 @@ public class IntegrityTestResultRecorder extends Recorder implements SimpleBuild
 			IntegrityCompoundTestResult tempResult = (IntegrityCompoundTestResult) new IntegrityTestResultParser()
 					.parseResult(tempExpandedTestResults, aRun, aWorkspace, aLauncher, aListener);
 
-			try {
-				tempResultAction = new IntegrityTestResultAction(aRun, tempResult, aListener);
-			} catch (NullPointerException exc) {
+			if (tempResult == null) {
 				throw new AbortException(
 						de.gebit.integrity.Messages.integrityTestResultRecorder_BadXML(testResultFileNamePattern));
 			}
+			tempResultAction = new IntegrityTestResultAction(aRun, tempResult, aListener);
 		} catch (AbortException exc) {
 			if (aRun.getResult() == Result.FAILURE) {
 				return;

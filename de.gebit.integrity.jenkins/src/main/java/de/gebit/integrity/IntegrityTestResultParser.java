@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,7 +39,6 @@ import hudson.Util;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
-import hudson.tasks.test.DefaultTestResultParserImpl;
 import hudson.tasks.test.TestResult;
 import jenkins.MasterToSlaveFileCallable;
 
@@ -47,7 +47,7 @@ import jenkins.MasterToSlaveFileCallable;
  * 
  * @author Rene Schneider - initial API and implementation
  */
-public class IntegrityTestResultParser extends DefaultTestResultParserImpl {
+public class IntegrityTestResultParser implements Serializable {
 
 	/**
 	 * The serial version.
@@ -73,19 +73,12 @@ public class IntegrityTestResultParser extends DefaultTestResultParserImpl {
 			System.getProperty(MAX_PARSER_THREADS_SYSTEM_PROPERTY, Integer.toString(MAX_PARSER_THREADS_DEFAULT))),
 			Runtime.getRuntime().availableProcessors());
 
-	@Override
-	protected TestResult parse(List<File> someReportFiles, Launcher launcher, TaskListener aListener)
-			throws InterruptedException, IOException {
-		throw new UnsupportedOperationException("Call the overloaded method with the workspace parameter!");
-	}
+	private static final boolean IGNORE_TIMESTAMP_CHECK = Boolean.getBoolean(
+			"hudson.tasks.test.TestResultParser.ignoreTimestampCheck");
 
 	/**
-	 * Copied the implementation from the super class in order to - pass the workspace to the actual
-	 * {@link #parse(String, hudson.model.AbstractBuild, Launcher, TaskListener)} method - avoid using the Run inside
-	 * the callable, since it is not serializable. - avoid passing the Launcher into the callable, since it is not
-	 * serializable either.
+	 * Resolves and parses report files on the agent without serializing the build or launcher.
 	 */
-	@Override
 	public TestResult parseResult(final String testResultLocations, Run<?, ?> build, final FilePath workspace,
 			Launcher launcher, final TaskListener listener) throws InterruptedException, IOException {
 		final long buildTime = build.getTimestamp().getTimeInMillis();
@@ -130,8 +123,7 @@ public class IntegrityTestResultParser extends DefaultTestResultParserImpl {
 	}
 
 	/**
-	 * This method performs the actual file parsing. It is used as an alternative to
-	 * {@link #parse(List, Launcher, TaskListener)} in order to eliminate the (unused) parameter "Launcher"
+	 * This method performs the actual file parsing on the agent.
 	 * 
 	 * @param someReportFiles
 	 * @param aListener

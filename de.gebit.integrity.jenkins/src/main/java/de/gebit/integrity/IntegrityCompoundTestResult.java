@@ -16,8 +16,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
@@ -244,7 +244,7 @@ public class IntegrityCompoundTestResult extends TabulatedResult {
 	}
 
 	@Override
-	public Object getDynamic(String aToken, StaplerRequest aRequest, StaplerResponse aResponse) {
+	public Object getDynamic(String aToken, StaplerRequest2 aRequest, StaplerResponse2 aResponse) {
 		TestResult tempResult = findCorrespondingResult(aToken);
 		if (tempResult != null) {
 			return tempResult;

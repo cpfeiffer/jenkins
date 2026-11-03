@@ -112,8 +112,8 @@ public class IntegrityHistory {
 
 				List<TestResult> tempResultList;
 				try {
-					tempResultList = getList(Integer.parseInt(Stapler.getCurrentRequest().getParameter("start")),
-							Integer.parseInt(Stapler.getCurrentRequest().getParameter("end")));
+					tempResultList = getList(Integer.parseInt(Stapler.getCurrentRequest2().getParameter("start")),
+							Integer.parseInt(Stapler.getCurrentRequest2().getParameter("end")));
 				} catch (NumberFormatException exc) {
 					tempResultList = getList();
 				}
@@ -255,7 +255,7 @@ public class IntegrityHistory {
 			Run<?, ?> tempBuild = result.getRun();
 			String tempBuildLink = tempBuild.getUrl();
 			String tempActionUrl = IntegrityTestResultAction.ACTION_URL;
-			this.url = Jenkins.getInstance().getRootUrl() + tempBuildLink + tempActionUrl + result.getUrl();
+			this.url = Jenkins.get().getRootUrl() + tempBuildLink + tempActionUrl + result.getUrl();
 		}
 
 		@Override

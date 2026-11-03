@@ -10,9 +10,8 @@ package de.gebit.integrity;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
-import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
@@ -24,6 +23,7 @@ import com.google.common.collect.ImmutableSet;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 
 /**
@@ -87,7 +87,7 @@ public class IntegrityTestResultStep extends Step implements Serializable {
 			return "integrity";
 		}
 
-		@Nonnull
+		@NonNull
 		@Override
 		public String getDisplayName() {
 			return "Archive Integrity Test Results";
@@ -95,7 +95,7 @@ public class IntegrityTestResultStep extends Step implements Serializable {
 
 		@Override
 		public Set<? extends Class<?>> getRequiredContext() {
-			return ImmutableSet.of(FilePath.class, FlowNode.class, TaskListener.class, Launcher.class);
+			return ImmutableSet.of(FilePath.class, Run.class, TaskListener.class, Launcher.class);
 		}
 	}
 
